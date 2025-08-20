@@ -9,13 +9,11 @@ type User struct {
 	Name string `json:"name"`
 }
 
-func main() {
+func main(){
 	r := gin.Default()
-
-	r.GET("/users", func(c *gin.Context) {
-		user := []User{{ID:"1",Name: "Nuttachot"}}
-		c.JSON(200,user)
+	r.GET("/users", func(c*gin.Context){
+		user:=[]User{{ID:"1",Name:"Natsuda"}}
+		c.JSON(200, user)
 	})
-	
 	r.Run(":8080")
 }
