@@ -3,12 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
-
-	// "http"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -36,7 +34,6 @@ var db *sql.DB
 
 func initDB() {
 	var err error
-
 	host := getEnv("DB_HOST", "")
 	name := getEnv("DB_NAME", "")
 	user := getEnv("DB_USER", "")
@@ -44,19 +41,14 @@ func initDB() {
 	port := getEnv("DB_PORT", "")
 
 	conSt := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, name)
-	//fmt.Println(conSt)
+	// fmt.Println(conSt)
 	db, err = sql.Open("postgres", conSt)
 	if err != nil {
 		log.Fatal("failed to open database")
 	}
 
-	// กำหนดจำนวน Connection สูงสุด
 	db.SetMaxOpenConns(25)
-
-	// กำหนดจำนวน Idle connection สูงสุด
 	db.SetMaxIdleConns(20)
-
-	// กำหนดอายุของ Connection
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	err = db.Ping()
@@ -64,57 +56,42 @@ func initDB() {
 		log.Fatal("failed to connect to database")
 	}
 
-	log.Println("successfully connect to database")
+	log.Println("successfully connected to database")
+
 }
 
 func getAllBooks(c *gin.Context) {
-	yearParam := c.Query("year") // ดึงค่าจาก query string เช่น ?year=2023
 	var rows *sql.Rows
 	var err error
-	if yearParam != "" {
-		rows, err = db.Query(`
-			SELECT id, title, author, isbn, year, price, created_at, updated_at
-			FROM books
-			WHERE year = $1
-		`, yearParam)
-	} else {
-		rows, err = db.Query(`
-			SELECT id, title, author, isbn, year, price, created_at, updated_at
-			FROM books
-		`)
-	}
+
+	rows, err = db.Query("SELECT id, title, author, isbn, year, price, created_at , updated_at FROM books")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
+
 	var books []Book
 	for rows.Next() {
 		var book Book
-		err := rows.Scan(
-			&book.ID, &book.Title, &book.Author, &book.ISBN,
-			&book.Year, &book.Price, &book.CreatedAt, &book.UpdatedAt,
-		)
+		err := rows.Scan(&book.ID, &book.Title, &book.Author, &book.ISBN, &book.Year, &book.Price, &book.CreatedAt, &book.UpdatedAt)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			// handle error
 		}
 		books = append(books, book)
 	}
 	if books == nil {
 		books = []Book{}
 	}
+
 	c.JSON(http.StatusOK, books)
 }
-
 
 func getBook(c *gin.Context) {
 	id := c.Param("id")
 	var book Book
 
-	// QueryRow ใช้เมื่อคาดว่าจะได้ผลลัพธ์ 0 หรือ 1 แถว
-	err := db.QueryRow("SELECT id, title, author FROM books WHERE id = $1", id).
-		Scan(&book.ID, &book.Title, &book.Author)
+	err := db.QueryRow("SELECT id, title, author FROM books WHERE id = $1", id).Scan(&book.ID, &book.Title, &book.Author)
 
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
@@ -135,16 +112,12 @@ func createBook(c *gin.Context) {
 		return
 	}
 
-	// ใช้ RETURNING เพื่อดึงค่าที่ database generate (id, timestamps)
 	var id int
 	var createdAt, updatedAt time.Time
 
 	err := db.QueryRow(
-		`INSERT INTO books (title, author, isbn, year, price)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, created_at, updated_at`,
-		newBook.Title, newBook.Author, newBook.ISBN, newBook.Year, newBook.Price,
-	).Scan(&id, &createdAt, &updatedAt)
+		`INSERT INTO books (title, author, isbn, year, price)VALUES ($1, $2, $3, $4, $5)RETURNING id, created_at, updated_at`,
+		newBook.Title, newBook.Author, newBook.ISBN, newBook.Year, newBook.Price).Scan(&id, &createdAt, &updatedAt)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -155,11 +128,11 @@ func createBook(c *gin.Context) {
 	newBook.CreatedAt = createdAt
 	newBook.UpdatedAt = updatedAt
 
-	c.JSON(http.StatusCreated, newBook) // ใช้ 201 Created
+	c.JSON(http.StatusCreated, newBook)
 }
 
 func updateBook(c *gin.Context) {
-	var Id int
+	var ID int
 	id := c.Param("id")
 	var updateBook Book
 
@@ -176,7 +149,7 @@ func updateBook(c *gin.Context) {
          RETURNING id,updated_at`,
 		updateBook.Title, updateBook.Author, updateBook.ISBN,
 		updateBook.Year, updateBook.Price, id,
-	).Scan(&Id ,&updatedAt)
+	).Scan(&ID, &updatedAt)
 
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
@@ -185,43 +158,44 @@ func updateBook(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	updateBook.ID = Id
+	updateBook.ID = ID
 	updateBook.UpdatedAt = updatedAt
 	c.JSON(http.StatusOK, updateBook)
 }
 
 func deleteBook(c *gin.Context) {
-    id := c.Param("id")
+	id := c.Param("id")
 
-    result, err := db.Exec("DELETE FROM books WHERE id = $1", id)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	result, err := db.Exec("DELETE FROM books WHERE id = $1", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    rowsAffected, err := result.RowsAffected()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    if rowsAffected == 0 {
-        c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
-        return
-    }
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "book deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "book deleted successfully"})
 }
 
 func main() {
 	initDB()
-	defer db.Close()
 	r := gin.Default()
+	defer db.Close()
 
 	r.GET("/health", func(c *gin.Context) {
 		err := db.Ping()
 		if err != nil {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"message": "unhealthy", "error": err})
+			c.JSON(http.StatusServiceUnavailable, gin.H{"message": "unhealty", "error": err})
+			return
 		}
 		c.JSON(200, gin.H{"message": "healthy"})
 	})
