@@ -164,6 +164,8 @@ func createBook(c *gin.Context) {
 		return
 	}
 
+	
+
 	newBook.ID = id
 	newBook.CreatedAt = createdAt
 	newBook.UpdatedAt = updatedAt
