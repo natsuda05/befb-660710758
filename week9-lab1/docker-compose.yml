@@ -2,17 +2,16 @@ services:
   app:
     build: .
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-    network_mode: host
+      DB_HOST: 172.17.0.1          # ✅ IP ของ host ที่รัน PostgreSQL อยู่
+      DB_PORT: 5432
+      DB_USER: bookstore_user      # ✅ ต้องตรงกับ POSTGRES_USER
+      DB_PASSWORD: your_strong_password   # ✅ ต้องตรงกับ POSTGRES_PASSWORD
+      DB_NAME: bookstore           # ✅ ต้องตรงกับ POSTGRES_DB
+    ports:
+      - "8080:8080"
     restart: unless-stopped
     healthcheck:
-    # ยิงไปเส้น health
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    #เช็คทุก 30 วิ
       interval: 30s
       timeout: 10s
       retries: 3
