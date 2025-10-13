@@ -1,25 +1,33 @@
-FROM golang:1.24.5 AS builder
+# Build stage
+FROM golang:1.24.5-alpine AS builder
 
-#Copy Soure code ทุกอย่าง
+# ติดตั้ง dependencies ที่จำเป็น
+RUN apk add --no-cache git wget
+
 WORKDIR /app
-#COPY เพื่อหา Library ทีี่ต้องใช้
+
+# Copy go mod files
 COPY go.mod go.sum ./
-RUN go mod download 
+RUN go mod download
 
-#Copy Soure code ทุกอย่าง อีกรอบเพื่อมา Build
-COPY . .  
+# Copy source code
+COPY . .
 
-#Build 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -o main .
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-#Image ที่จะใช้งาน
-FROM alpine:latest 
+# Final stage
+FROM alpine:latest
 
-#ใช้ทดสอบยิง API เส้น  health
-RUN apk --no-cache add ca-certificates curl
+RUN apk --no-cache add ca-certificates wget
 
-WORKDIR /root
+WORKDIR /root/
 
+# Copy the binary from builder
 COPY --from=builder /app/main .
 
-ENTRYPOINT [ "./main"]
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["./main"]
