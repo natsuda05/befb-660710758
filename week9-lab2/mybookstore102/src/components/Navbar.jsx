@@ -26,51 +26,46 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-8">
-            <NavLink 
-              to="/" 
-              className={({ isActive }) => 
-                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${
-                  isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
                 }`
               }
             >
               หน้าแรก
             </NavLink>
-            <NavLink 
-              to="/books" 
-              className={({ isActive }) => 
-                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${
-                  isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
+            <NavLink
+              to="/books"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
                 }`
               }
             >
               หนังสือ
             </NavLink>
-            <NavLink 
-              to="/categories" 
-              className={({ isActive }) => 
-                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${
-                  isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
+            <NavLink
+              to="/categories"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
                 }`
               }
             >
               หมวดหมู่
             </NavLink>
-            <NavLink 
-              to="/about" 
-              className={({ isActive }) => 
-                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${
-                  isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
                 }`
               }
             >
               เกี่ยวกับเรา
             </NavLink>
-            <NavLink 
-              to="/contact" 
-              className={({ isActive }) => 
-                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${
-                  isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-viridian-600 transition-colors font-medium ${isActive ? 'text-viridian-600 border-b-2 border-viridian-600' : ''
                 }`
               }
             >
@@ -83,7 +78,7 @@ const Navbar = () => {
             <button className="p-2 text-gray-600 hover:text-viridian-600 transition-colors">
               <SearchIcon className="h-6 w-6" />
             </button>
-            
+
             <button className="relative p-2 text-gray-600 hover:text-viridian-600 transition-colors">
               <ShoppingCartIcon className="h-6 w-6" />
               {cartCount > 0 && (
@@ -93,13 +88,17 @@ const Navbar = () => {
                 </span>
               )}
             </button>
-            
-            <button className="p-2 text-gray-600 hover:text-viridian-600 transition-colors">
+
+            <Link
+              to="/login"
+              className="flex items-center p-2 text-gray-600 hover:text-viridian-600 transition-colors"
+            >
               <UserIcon className="h-6 w-6" />
-            </button>
+              <span className="ml-2 text-gray-700 hover:text-viridian-600"></span>
+            </Link>
 
             {/* Mobile Menu Toggle */}
-            <button 
+            <button
               className="lg:hidden p-2 text-gray-600 hover:text-viridian-600 transition-colors"
               onClick={toggleMenu}
             >
@@ -113,40 +112,39 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        <div className={`lg:hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-        }`}>
+        <div className={`lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+          }`}>
           <div className="py-4 border-t">
-            <NavLink 
-              to="/" 
+            <NavLink
+              to="/"
               className="block py-2 text-gray-700 hover:text-viridian-600 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               หน้าแรก
             </NavLink>
-            <NavLink 
-              to="/books" 
+            <NavLink
+              to="/books"
               className="block py-2 text-gray-700 hover:text-viridian-600 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               หนังสือ
             </NavLink>
-            <NavLink 
-              to="/categories" 
+            <NavLink
+              to="/categories"
               className="block py-2 text-gray-700 hover:text-viridian-600 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               หมวดหมู่
             </NavLink>
-            <NavLink 
-              to="/about" 
+            <NavLink
+              to="/about"
               className="block py-2 text-gray-700 hover:text-viridian-600 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               เกี่ยวกับเรา
             </NavLink>
-            <NavLink 
-              to="/contact" 
+            <NavLink
+              to="/contact"
               className="block py-2 text-gray-700 hover:text-viridian-600 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
